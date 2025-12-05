@@ -1,0 +1,29 @@
+---
+title: "PSY6422 Mini Project"
+format: html
+editor: visual
+---
+
+# Overview
+
+\[Provide overview of what this page contains\]
+
+# Data Origins
+
+\[Answering questions of where data comes from, how data were collected, what the variables mean, etc. Show the first few rows of the raw data, if possible\]
+
+# Research Questions
+
+\[In plain English, a simple statement of what question(s) your visualisation will attempt to address\]
+
+# Data Preparation
+
+\[Steps taken to clean the data, exclude outliers, sanity check the data range and values, create summary statistics, grouped variables, etc. Show the first few rows of the processed data, if possible. Showing the code which does this where relevant\]
+
+# Visualisation
+
+\[Graph or graphs. Documentation explaining any motivation (although good graph labelling is better than explanation in the accompanying text). Code for producing graph(s)\]
+
+# Summary
+
+\[Brief thoughts on what you have learnt, what you might do next if you had more time / more data\]
