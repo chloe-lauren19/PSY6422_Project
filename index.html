@@ -114,19 +114,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="data-origins" class="level1">
 <h1>2.0 Data Origins</h1>
-<p>[Answering questions of where data comes from, how data were collected, what the variables mean, etc. Show the first few rows of the raw data, if possible.</p>
+<p>The data used in this project was found in a Crowdsourced list of <a href="https://docs.google.com/spreadsheets/d/1ejOJTNTL5ApCuGTUciV0REEEAqvhI2Rd2FCoj7afops/edit?gid=0#gid=0https://docs.google.com/spreadsheets/d/1ejOJTNTL5ApCuGTUciV0REEEAqvhI2Rd2FCoj7afops/edit?gid=0#gid=0">‘Open Psychological Datasets’</a>. In this list was the <a href="https://docs.google.com/spreadsheets/d/1rsVlKg0vBzkx7XUGK4joky9cM8umtkQRpJ2Y-5d6x7c/edit?gid=762232233#gid=762232233">OpenNeuro Dataset of Metadata</a>. OpenNeuro is a data archive that shares public datasets for others to use in their research. The meta-dataset used in this project consists of a list of neuroimaging studies that have used a range of imaging modalities. This data was collected by researchers uploading their data to the data archive. The dataset was downloaded on the 10th of October 2025 and therefore may not contain all data that is in the live metadata online.</p>
 <section id="load-data" class="level2">
 <h2 class="anchored" data-anchor-id="load-data">2.1 Load Data</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load Open Neuro Metadata dataset</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>neuroscience_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">"datasets"</span>, <span class="st">"neuroscience_metadata.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>neuroscience_raw <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">"datasets"</span>, <span class="st">"neuroscience_metadata.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="raw-data-summary" class="level2">
-<h2 class="anchored" data-anchor-id="raw-data-summary">2.2 Raw Data Summary</h2>
+<section id="raw-data-summary-and-variables" class="level2">
+<h2 class="anchored" data-anchor-id="raw-data-summary-and-variables">2.2 Raw Data Summary and Variables</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Show the first ten rows of the raw data</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(neuroscience_data, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(neuroscience_raw, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 10 × 48
    accession_number dataset_url    dataset_name made_public most_recent_snapshot
@@ -150,7 +150,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 #   size_gb &lt;dbl&gt;, ...23 &lt;lgl&gt;, ...24 &lt;lgl&gt;, ...25 &lt;lgl&gt;, ...26 &lt;lgl&gt;, …</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Provide a summary of the dataset</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(neuroscience_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(neuroscience_raw)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> accession_number   dataset_url        dataset_name       made_public       
  Length:2502        Length:2502        Length:2502        Length:2502       
@@ -250,7 +250,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
                               </code></pre>
 </div>
 </div>
-<p>As seen from viewing the first ten rows of the raw data, there are 48 columns. Due to the this, not all variables are shown when using the head() function therefore, I have used the summary() function to gain information about the hidden variables.</p>
+<p>As seen from viewing the first ten rows of the raw data, there are 48 columns. Due to the this, not all variables are shown when using the head() function therefore, I have used the summary() function to gain information about the hidden variables. Using this function determines that first 23 of the 48 columns are variables with the remaining, 25 columns containing NAs. From these 23 variables, 3 will be retained for the analysis conducted in this project. These variables are as follows:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable Name</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>made_public</td>
+<td>the date the dataset was made public</td>
+</tr>
+<tr class="even">
+<td>modalities</td>
+<td>the imaging modalities used in the study</td>
+</tr>
+<tr class="odd">
+<td>species</td>
+<td>the species of the subjects used in the study</td>
+</tr>
+</tbody>
+</table>
 </section>
 </section>
 <section id="research-questions" class="level1">
