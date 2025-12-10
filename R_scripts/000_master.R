@@ -24,3 +24,4 @@ source("R_scripts/001_functions.R")
 # Processing ------------------------------------------------
 
 ## Load in all scripts for this project
+source("R_scripts/002_dataprep.R")

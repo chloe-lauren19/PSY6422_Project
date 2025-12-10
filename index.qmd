@@ -22,7 +22,7 @@ library(here)
 
 # 2.0 Data Origins
 
-\[Answering questions of where data comes from, how data were collected, what the variables mean, etc. Show the first few rows of the raw data, if possible.
+The data used in this project was found in a Crowdsourced list of ['Open Psychological Datasets'](https://docs.google.com/spreadsheets/d/1ejOJTNTL5ApCuGTUciV0REEEAqvhI2Rd2FCoj7afops/edit?gid=0#gid=0https://docs.google.com/spreadsheets/d/1ejOJTNTL5ApCuGTUciV0REEEAqvhI2Rd2FCoj7afops/edit?gid=0#gid=0). In this list was the [OpenNeuro Dataset of Metadata](https://docs.google.com/spreadsheets/d/1rsVlKg0vBzkx7XUGK4joky9cM8umtkQRpJ2Y-5d6x7c/edit?gid=762232233#gid=762232233). OpenNeuro is a data archive that shares public datasets for others to use in their research. The meta-dataset used in this project consists of a list of neuroimaging studies that have used a range of imaging modalities. This data was collected by researchers uploading their data to the data archive. The dataset was downloaded on the 10th of October 2025 and therefore may not contain all data that is in the live metadata online.
 
 ## 2.1 Load Data
 
@@ -31,20 +31,26 @@ library(here)
 #| results: 'hide'
 
 # Load Open Neuro Metadata dataset
-neuroscience_data <- read_csv(here("datasets", "neuroscience_metadata.csv"))
+neuroscience_raw <- read_csv(here("datasets", "neuroscience_metadata.csv"))
 ```
 
-## 2.2 Raw Data Summary
+## 2.2 Raw Data Summary and Variables
 
 ```{r}
 # Show the first ten rows of the raw data
-head(neuroscience_data, n = 10)
+head(neuroscience_raw, n = 10)
 
 # Provide a summary of the dataset
-summary(neuroscience_data)
+summary(neuroscience_raw)
 ```
 
-As seen from viewing the first ten rows of the raw data, there are 48 columns. Due to the this, not all variables are shown when using the head() function therefore, I have used the summary() function to gain information about the hidden variables.
+As seen from viewing the first ten rows of the raw data, there are 48 columns. Due to the this, not all variables are shown when using the head() function therefore, I have used the summary() function to gain information about the hidden variables. Using this function determines that first 23 of the 48 columns are variables with the remaining, 25 columns containing NAs. From these 23 variables, 3 will be retained for the analysis conducted in this project. These variables are as follows:
+
+| Variable Name | Meaning                                       |
+|---------------|-----------------------------------------------|
+| made_public   | the date the dataset was made public          |
+| modalities    | the imaging modalities used in the study      |
+| species       | the species of the subjects used in the study |
 
 # 3.0 Research Questions
 
