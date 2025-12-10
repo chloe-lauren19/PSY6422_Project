@@ -37,8 +37,10 @@ neuroscience_raw <- read_csv(here("datasets", "neuroscience_metadata.csv"))
 ## 2.2 Raw Data Summary and Variables
 
 ```{r}
+#| message: FALSE
+
 # Show the first ten rows of the raw data
-head(neuroscience_raw, n = 10)
+head(neuroscience_raw, 10)
 
 # Provide a summary of the dataset
 summary(neuroscience_raw)
@@ -52,13 +54,131 @@ As seen from viewing the first ten rows of the raw data, there are 48 columns. D
 | modalities    | the imaging modalities used in the study      |
 | species       | the species of the subjects used in the study |
 
-# 3.0 Research Questions
+# 3.0 Research Question
 
 \[In plain English, a simple statement of what question(s) your visualisation will attempt to address\]
+
+The aim of this project is to visualise how has use of neuroimaging techniques in human studies changed over time. The visualisation produced to answer this research question will demonstrate the count of individual **(provide examples)** and multimodal imaging techniques over time from **\[beginning year\]** to **\[end year\]**.
 
 # 4.0 Data Preparation
 
 \[Steps taken to clean the data, exclude outliers, sanity check the data range and values, create summary statistics, grouped variables, etc. Show the first few rows of the processed data, if possible. Showing the code which does this where relevant\]
+
+## 4.1 Data Cleaning
+
+Firstly the variables and empty columns were removed from the dataset so that only the variables needed for the visualisation remained. In addition to this, two new columns were created: 'ID' and 'date_published'. The 'ID' column makes the dataset easier to read while the 'date_published' column converts the 'made_public' data from a character variable to a date variable. The 'made_public' column was then removed to avoid confusion with the new 'date_published' column.
+
+```{r}
+## Clean data -----------------------------------------------
+### Make dataset with just the variables needed for the -
+### project
+neuroscience_data <- neuroscience_raw %>% 
+  select(made_public, modalities, species) %>% # Only retain these columns
+  drop_na() %>% # Remove all rows containing NAs
+  mutate(ID = row_number(), .before = 1, # Create an ID column to the left of the dataset
+         date_published = as.Date(made_public, "%m/%d/%Y")) %>% # Create a date_published column with a date data type
+  select(ID, date_published, modalities, species) # Remove the made_public column
+```
+
+Next the 'species' column was filtered to only include human studies as the research question involves investigating the neuroimaging techniques in humans.
+
+```{r}
+### Remove subjects that aren't human
+human_data <- neuroscience_data %>% 
+  filter(species == "Human")
+
+### Sanity Check: check that there aren't any non-human species remaining
+for(i in human_data$species){
+  if(i != "Human"){
+    print("Test Failed") # If test is passed nothing should be printed
+  }
+}
+```
+
+## 4.2 Renaming 'modalities' values
+
+The values in the modalities column were not suitable for this project as they were inconsistent strings. In order to make the data ready for producing a visualisation, the values were recoded into 6 categories: 'multimodal', 'eeg', 'meg', 'dMRI', 'fMRI', and 'sMRI'.
+
+```{r}
+### View the number of modalities in the dataset and save as a dataset
+modality_count <- human_data %>% 
+  group_by(modalities) %>% 
+  count()
+
+### Remove unspecified groups in modalities variable and rename with imaging categories
+modality_data <- human_data %>% 
+  filter(modalities != "beh") %>% 
+  mutate(modalities = case_match(modalities, 
+                                 c("bold, events, t1w",
+                                   "eeg, nirs",
+                                   "mri_diffusion, mri_functional, mri",
+                                   "mri_diffusion, mri_functional, mri_structural, eeg, mri",
+                                   "mri_diffusion, mri_functional, mri_structural, mri",
+                                   "mri_diffusion, mri_structural, eeg, mri",
+                                   "mri_diffusion, mri_structural, mri",
+                                   "mri_diffusion, mri_structural, mri_functional, mri",
+                                   "mri_diffusion, mri_structural, mri_functional, mri, pet",
+                                   "mri_diffusion, mri_structural, mri_functional, mri_perfusion, mri",
+                                   "mri_functional, mri, eeg",
+                                   "mri_functional, mri_diffusion, mri_structural, eeg, mri, beh",
+                                   "mri_functional, mri_diffusion, mri_structural, meg, mri",
+                                   "mri_functional, mri_diffusion, mri_structural, mri",
+                                   "mri_functional, mri_perfusion, mri_structural, mri",
+                                   "mri_functional, mri_structural, eeg, mri",
+                                   "mri_functional, mri_structural, mri",
+                                   "mri_functional, mri_structural, mri, beh",
+                                   "mri_functional, mri_structural, mri, eeg",
+                                   "mri_functional, mri_structural, mri, eeg, beh",
+                                   "mri_functional, mri_structural, mri, ieeg",
+                                   "mri_functional, mri_structural, mri_diffusion, mri",
+                                   "mri_functional, mri_structural, pet_dynamic, mri, pet",
+                                   "mri_functional, pet_static, mri_structural, pet_dynamic, mri, pet",
+                                   "mri_structural, eeg, mri",
+                                   "mri_structural, ieeg, mri",
+                                   "mri_structural, meg, mri",
+                                   "mri_structural, meg, mri, beh",
+                                   "mri_structural, mri, pet",
+                                   "mri_structural, mri_diffusion, mri",
+                                   "mri_structural, mri_diffusion, mri_functional, mri",
+                                   "mri_structural, mri_diffusion, mri_functional, mri, eeg",
+                                   "mri_structural, mri_functional, ieeg, mri",
+                                   "mri_structural, mri_functional, mri",
+                                   "mri_structural, mri_functional, mri, eeg",
+                                   "mri_structural, pet, mri",
+                                   "pet_dynamic, mri_functional, mri_structural, mri, pet",
+                                   "t1w, bold, events",
+                                   "t1w, bold, events, fieldmap",
+                                   "t1w, channels, eeg, events, bold") ~ "multimodal",
+                                 c("channels, eeg, electrodes, events", 
+                                   "channels, eeg, events",
+                                   "eeg, beh",
+                                   "ieeg",
+                                   "ieeg, eeg") ~ "eeg",
+                                 "meg, beh" ~ "meg",
+                                 "mri_diffusion, mri" ~ "dMRI",
+                                 "mri_functional, mri" ~ "fMRI",
+                                 c("mri_structural, mri",
+                                   "t1w") ~ "sMRI",
+                                 .default = modalities))
+
+### Sanity check: Ensure the total number of observations is 846 in the human_data 
+### and that the only categories are "multimodal", "eeg", "meg", "dMRI", "fMRI", and "sMRI"
+modality_count <- modality_data %>% 
+  group_by(modalities) %>% 
+  count() 
+
+sum(modality_count$n)
+```
+
+After completion of this step, the data was ready for visualisation. Below is a preview of the processed data.
+
+```{r}
+### If the above sanity check is passed then save the data as below
+neuroimaging_overtime <- modality_data
+
+### Preview the final dataset
+head(neuroimaging_overtime, 10)
+```
 
 # 5.0 Visualisation
 
