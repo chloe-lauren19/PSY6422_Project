@@ -126,7 +126,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="raw-data-summary-and-variables">2.2 Raw Data Summary and Variables</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Show the first ten rows of the raw data</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(neuroscience_raw, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(neuroscience_raw, <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 10 × 48
    accession_number dataset_url    dataset_name made_public most_recent_snapshot
@@ -275,13 +275,142 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 </section>
-<section id="research-questions" class="level1">
-<h1>3.0 Research Questions</h1>
+<section id="research-question" class="level1">
+<h1>3.0 Research Question</h1>
 <p>[In plain English, a simple statement of what question(s) your visualisation will attempt to address]</p>
+<p>The aim of this project is to visualise how has use of neuroimaging techniques in human studies changed over time. The visualisation produced to answer this research question will demonstrate the count of individual <strong>(provide examples)</strong> and multimodal imaging techniques over time from <strong>[beginning year]</strong> to <strong>[end year]</strong>.</p>
 </section>
 <section id="data-preparation" class="level1">
 <h1>4.0 Data Preparation</h1>
 <p>[Steps taken to clean the data, exclude outliers, sanity check the data range and values, create summary statistics, grouped variables, etc. Show the first few rows of the processed data, if possible. Showing the code which does this where relevant]</p>
+<section id="data-cleaning" class="level2">
+<h2 class="anchored" data-anchor-id="data-cleaning">4.1 Data Cleaning</h2>
+<p>Firstly the variables and empty columns were removed from the dataset so that only the variables needed for the visualisation remained. In addition to this, two new columns were created: ‘ID’ and ‘date_published’. The ‘ID’ column makes the dataset easier to read while the ‘date_published’ column converts the ‘made_public’ data from a character variable to a date variable. The ‘made_public’ column was then removed to avoid confusion with the new ‘date_published’ column.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Clean data -----------------------------------------------</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="do">### Make dataset with just the variables needed for the -</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="do">### project</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>neuroscience_data <span class="ot">&lt;-</span> neuroscience_raw <span class="sc">%&gt;%</span> </span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(made_public, modalities, species) <span class="sc">%&gt;%</span> <span class="co"># Only retain these columns</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>() <span class="sc">%&gt;%</span> <span class="co"># Remove all rows containing NAs</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ID =</span> <span class="fu">row_number</span>(), <span class="at">.before =</span> <span class="dv">1</span>, <span class="co"># Create an ID column to the left of the dataset</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">date_published =</span> <span class="fu">as.Date</span>(made_public, <span class="st">"%m/%d/%Y"</span>)) <span class="sc">%&gt;%</span> <span class="co"># Create a date_published column with a date data type</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(ID, date_published, modalities, species) <span class="co"># Remove the made_public column</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next the ‘species’ column was filtered to only include human studies as the research question involves investigating the neuroimaging techniques in humans.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="do">### Remove subjects that aren't human</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>human_data <span class="ot">&lt;-</span> neuroscience_data <span class="sc">%&gt;%</span> </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(species <span class="sc">==</span> <span class="st">"Human"</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="do">### Sanity Check: check that there aren't any non-human species remaining</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> human_data<span class="sc">$</span>species){</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(i <span class="sc">!=</span> <span class="st">"Human"</span>){</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(<span class="st">"Test Failed"</span>) <span class="co"># If test is passed nothing should be printed</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="renaming-modalities-values" class="level2">
+<h2 class="anchored" data-anchor-id="renaming-modalities-values">4.2 Renaming ‘modalities’ values</h2>
+<p>The values in the modalities column were not suitable for this project as they were inconsistent strings. In order to make the data ready for producing a visualisation, the values were recoded into 6 categories: ‘multimodal’, ‘eeg’, ‘meg’, ‘dMRI’, ‘fMRI’, and ‘sMRI’.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="do">### View the number of modalities in the dataset and save as a dataset</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>modality_count <span class="ot">&lt;-</span> human_data <span class="sc">%&gt;%</span> </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(modalities) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>()</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="do">### Remove unspecified groups in modalities variable and rename with imaging categories</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>modality_data <span class="ot">&lt;-</span> human_data <span class="sc">%&gt;%</span> </span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(modalities <span class="sc">!=</span> <span class="st">"beh"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">modalities =</span> <span class="fu">case_match</span>(modalities, </span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>                                 <span class="fu">c</span>(<span class="st">"bold, events, t1w"</span>,</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"eeg, nirs"</span>,</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_diffusion, mri_functional, mri"</span>,</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_diffusion, mri_functional, mri_structural, eeg, mri"</span>,</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_diffusion, mri_functional, mri_structural, mri"</span>,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_diffusion, mri_structural, eeg, mri"</span>,</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_diffusion, mri_structural, mri"</span>,</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_diffusion, mri_structural, mri_functional, mri"</span>,</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_diffusion, mri_structural, mri_functional, mri, pet"</span>,</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_diffusion, mri_structural, mri_functional, mri_perfusion, mri"</span>,</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_functional, mri, eeg"</span>,</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_functional, mri_diffusion, mri_structural, eeg, mri, beh"</span>,</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_functional, mri_diffusion, mri_structural, meg, mri"</span>,</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_functional, mri_diffusion, mri_structural, mri"</span>,</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_functional, mri_perfusion, mri_structural, mri"</span>,</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_functional, mri_structural, eeg, mri"</span>,</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_functional, mri_structural, mri"</span>,</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_functional, mri_structural, mri, beh"</span>,</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_functional, mri_structural, mri, eeg"</span>,</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_functional, mri_structural, mri, eeg, beh"</span>,</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_functional, mri_structural, mri, ieeg"</span>,</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_functional, mri_structural, mri_diffusion, mri"</span>,</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_functional, mri_structural, pet_dynamic, mri, pet"</span>,</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_functional, pet_static, mri_structural, pet_dynamic, mri, pet"</span>,</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_structural, eeg, mri"</span>,</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_structural, ieeg, mri"</span>,</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_structural, meg, mri"</span>,</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_structural, meg, mri, beh"</span>,</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_structural, mri, pet"</span>,</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_structural, mri_diffusion, mri"</span>,</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_structural, mri_diffusion, mri_functional, mri"</span>,</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_structural, mri_diffusion, mri_functional, mri, eeg"</span>,</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_structural, mri_functional, ieeg, mri"</span>,</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_structural, mri_functional, mri"</span>,</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_structural, mri_functional, mri, eeg"</span>,</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"mri_structural, pet, mri"</span>,</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"pet_dynamic, mri_functional, mri_structural, mri, pet"</span>,</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"t1w, bold, events"</span>,</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"t1w, bold, events, fieldmap"</span>,</span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"t1w, channels, eeg, events, bold"</span>) <span class="sc">~</span> <span class="st">"multimodal"</span>,</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>                                 <span class="fu">c</span>(<span class="st">"channels, eeg, electrodes, events"</span>, </span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"channels, eeg, events"</span>,</span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"eeg, beh"</span>,</span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"ieeg"</span>,</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"ieeg, eeg"</span>) <span class="sc">~</span> <span class="st">"eeg"</span>,</span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"meg, beh"</span> <span class="sc">~</span> <span class="st">"meg"</span>,</span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"mri_diffusion, mri"</span> <span class="sc">~</span> <span class="st">"dMRI"</span>,</span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"mri_functional, mri"</span> <span class="sc">~</span> <span class="st">"fMRI"</span>,</span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>                                 <span class="fu">c</span>(<span class="st">"mri_structural, mri"</span>,</span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"t1w"</span>) <span class="sc">~</span> <span class="st">"sMRI"</span>,</span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">.default =</span> modalities))</span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a><span class="do">### Sanity check: Ensure the total number of observations is 846 in the human_data </span></span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a><span class="do">### and that the only categories are "multimodal", "eeg", "meg", "dMRI", "fMRI", and "sMRI"</span></span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>modality_count <span class="ot">&lt;-</span> modality_data <span class="sc">%&gt;%</span> </span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(modalities) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>() </span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(modality_count<span class="sc">$</span>n)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 846</code></pre>
+</div>
+</div>
+<p>After completion of this step, the data was ready for visualisation. Below is a preview of the processed data.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="do">### If the above sanity check is passed then save the data as below</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>neuroimaging_overtime <span class="ot">&lt;-</span> modality_data</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="do">### Preview the final dataset</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(neuroimaging_overtime, <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 4
+      ID date_published modalities species
+   &lt;int&gt; &lt;date&gt;         &lt;chr&gt;      &lt;chr&gt;  
+ 1     1 2020-08-07     multimodal Human  
+ 2     2 2019-09-30     multimodal Human  
+ 3     3 2021-01-05     multimodal Human  
+ 4     4 2021-01-06     multimodal Human  
+ 5     5 2018-03-30     multimodal Human  
+ 6     6 2022-10-21     multimodal Human  
+ 7     7 2019-11-29     multimodal Human  
+ 8     8 2020-01-21     multimodal Human  
+ 9     9 2020-01-19     multimodal Human  
+10    10 2022-05-24     multimodal Human  </code></pre>
+</div>
+</div>
+</section>
 </section>
 <section id="visualisation" class="level1">
 <h1>5.0 Visualisation</h1>
