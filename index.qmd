@@ -57,7 +57,7 @@ head(neuroscience_raw, 10)
 summary(neuroscience_raw)
 ```
 
-As seen from viewing the first ten rows of the raw data, there are 48 columns. Due to the this, not all variables are shown when using the head() function therefore, I have used the summary() function to gain information about the hidden variables. Using this function determines that first 23 of the 48 columns are variables with the remaining, 25 columns containing NAs. From these 23 variables, 3 will be retained for the analysis conducted in this project. These variables are as follows:
+As seen from viewing the first ten rows of the raw data, there are 48 columns. Due to the this, not all variables are shown when using the head() function therefore, I have used the summary() function to gain information about the hidden variables. Using this function determines that first 23 of the 48 columns are variables with the remaining 25 columns containing NAs. From these 23 variables, 3 will be retained for the analysis conducted in this project. These variables are as follows:
 
 | Variable Name | Meaning                                       |
 |---------------|-----------------------------------------------|
@@ -67,7 +67,7 @@ As seen from viewing the first ten rows of the raw data, there are 48 columns. D
 
 # 3.0 Research Question
 
-The aim of this project is to visualise how has use of neuroimaging techniques in human studies changed over time. The visualisation produced to answer this research question will demonstrate the count of individual (e.g., EEG, fMRI and NIRS) and multimodal imaging techniques over time from 2018to 2025.
+The aim of this project is to visualise "How has the use of neuroimaging techniques in human studies changed over time?". The visualisation produced to answer this research question will demonstrate the count of individual (e.g., EEG, fMRI and NIRS) and multimodal imaging techniques over time from 2018to 2025.
 
 # 4.0 Data Preparation
 
@@ -180,7 +180,7 @@ sum(modality_count$n)
 
 ## 4.3 Reshaping the data
 
-Using the clean 'modality_data', the final dataset that is used in the visualisation was created by grouping the data by modality and calculating the count of each modality per year.
+Using the clean 'modality_data', the dataset was reshaped to group the data by modality and calculate the count of each modality per year.
 
 ```{r}
 ## Reshaping the data -------------------------------------
@@ -250,8 +250,6 @@ head(neuroimaging_final, 10)
 ```
 
 # 5.0 Visualisation
-
-\[Graph or graphs. Documentation explaining any motivation (although good graph labelling is better than explanation in the accompanying text). Code for producing graph(s)\]
 
 ## 5.1 Draft Plot
 
