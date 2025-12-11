@@ -320,8 +320,6 @@ neuroimaging_visualisation
 
 # 6.0 Summary
 
-\[Brief thoughts on what you have learnt, what you might do next if you had more time / more data\]
-
 ## 6.1 Conclusions from the Final Visualisation
 
 The aim of the visualisation in this project was to answer the research question "How has use of neuroimaging techniques in human studies changed over time?". From the final visualisation it can be concluded that multimodal imaging is the most frequently imaging technique across all dates in the analysis. EEG has increased in popularity from 2018, however other imaging techniques were used much less often. This could be due to the costs associated with these imaging modalities. Furthermore the data used in this project was open access data uploaded by researchers, as a result the data may not be reflective of the true neuroimaging research field.
