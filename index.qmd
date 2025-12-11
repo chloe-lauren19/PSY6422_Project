@@ -2,24 +2,34 @@
 title: "PSY6422 Mini Project"
 format: html
 editor: visual
+theme: minty
+toc: true
+toc-location: left
 ---
 
 # 1.0 Overview
 
-\[Provide overview of what this page contains\]
+This project will produce a visualisation that demonstrates how the use of different neuroimaging modalities has changed over recent years. Specifically, the project focuses on human neuroimaging. This page provides the steps taken to produce this visualisation. The packages required to produce this visualisaiton are detailed below. More information about the data used in this project is available in the **2.0 Data Origins** section. The research question is then provided in section **3.0 Research Question** before the steps to prepare the data for plotting are described in section **4.0 Data Preparation**. Section **5.0 Visualisation** presents the final visualisation. Finally, conclusions from the visualisation, self-reflections and the next steps are discussed in section **6.0 Summary**.
 
 ## 1.1 Packages
 
 ```{r}
 #| message: FALSE
 
-# Install packages - update as you progress through the project
-
 # Load packages
 library(tidyverse)
 library(here)
 library(plotly)
 ```
+
+## 1.2 Version Information
+
+| Package   | Version         |
+|-----------|-----------------|
+| R         | R version 4.5.1 |
+| Tidyverse | tidyverse_2.0.0 |
+| Here      | here_1.0.2      |
+| Plotly    | plotly_4.11.0   |
 
 # 2.0 Data Origins
 
@@ -57,13 +67,9 @@ As seen from viewing the first ten rows of the raw data, there are 48 columns. D
 
 # 3.0 Research Question
 
-\[In plain English, a simple statement of what question(s) your visualisation will attempt to address\]
-
-The aim of this project is to visualise how has use of neuroimaging techniques in human studies changed over time. The visualisation produced to answer this research question will demonstrate the count of individual **(provide examples)** and multimodal imaging techniques over time from **\[beginning year\]** to **\[end year\]**.
+The aim of this project is to visualise how has use of neuroimaging techniques in human studies changed over time. The visualisation produced to answer this research question will demonstrate the count of individual (e.g., EEG, fMRI and NIRS) and multimodal imaging techniques over time from 2018to 2025.
 
 # 4.0 Data Preparation
-
-\[Steps taken to clean the data, exclude outliers, sanity check the data range and values, create summary statistics, grouped variables, etc. Show the first few rows of the processed data, if possible. Showing the code which does this where relevant\]
 
 ## 4.1 Data Cleaning
 
@@ -315,3 +321,21 @@ neuroimaging_visualisation
 # 6.0 Summary
 
 \[Brief thoughts on what you have learnt, what you might do next if you had more time / more data\]
+
+## 6.1 Conclusions from the Final Visualisation
+
+The aim of the visualisation in this project was to answer the research question "How has use of neuroimaging techniques in human studies changed over time?". From the final visualisation it can be concluded that multimodal imaging is the most frequently imaging technique across all dates in the analysis. EEG has increased in popularity from 2018, however other imaging techniques were used much less often. This could be due to the costs associated with these imaging modalities. Furthermore the data used in this project was open access data uploaded by researchers, as a result the data may not be reflective of the true neuroimaging research field.
+
+## 6.2 Self Reflection
+
+This project has taught me how to create and interactive visualisation using the tidyverse and plotly packages. Additionally, I have learnt how to use GitHub as a version control system. This is useful for myself to keep track of changes I have made in my projects as well as for others who may wish to reproduce my projects in the future. For me, the most difficult part of this project was wrangling my data so that it was in the correct format to produce the visualisation with the process involving a lot of trial and error.
+
+## 6.3 Suggestions for the Future
+
+To expand on the current visualisation, I would like to learn how to use gganimate to make the lines of the graph move across the plot from 2018 to 2025. This would make the graph more complex and would highlight the change in frequency of different modalities over time to a greater extent than the current visualisation. Additionally, it would be insightful to conduct the same visualisation over a larger period of time. This would allow for a better view of how approaches to neuroimaging in research studies have changed over time.
+
+# 7.0 References
+
+OpenNeuro. (2019). *OpenNeuro Dataset Metadata*. Google Docs. https://docs.google.com/spreadsheets/d/1rsVlKg0vBzkx7XUGK4joky9cM8umtkQRpJ2Y-5d6x7c/edit?gid=762232233#gid=762232233
+
+*Psychological Stimulus Sets and Datasets*. (2019). Google Docs. https://docs.google.com/spreadsheets/d/1ejOJTNTL5ApCuGTUciV0REEEAqvhI2Rd2FCoj7afops/edit?gid=0#gid=0
