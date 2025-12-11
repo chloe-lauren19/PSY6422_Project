@@ -66,7 +66,7 @@ The aim of this project is to visualise how has use of neuroimaging techniques i
 
 ## 4.1 Data Cleaning
 
-Firstly the variables and empty columns were removed from the dataset so that only the variables needed for the visualisation remained. In addition to this, two new columns were created: 'ID' and 'date_published'. The 'ID' column makes the dataset easier to read while the 'date_published' column converts the 'made_public' data from a character variable to a date variable. The 'made_public' column was then removed to avoid confusion with the new 'date_published' column.
+Firstly the variables and empty columns were removed from the dataset so that only the variables needed to create the final dataset for the visualisation remained. In addition to this, two new columns were created: 'ID' and 'date_published'. The 'ID' column makes the data easier to read while the 'date_published' column converts the 'made_public' data from a character variable to a date variable. The 'made_public' column was then removed to avoid confusion with the new 'date_published' column.
 
 ```{r}
 ## Clean data -----------------------------------------------
@@ -76,8 +76,9 @@ neuroscience_data <- neuroscience_raw %>%
   select(made_public, modalities, species) %>% # Only retain these columns
   drop_na() %>% # Remove all rows containing NAs
   mutate(ID = row_number(), .before = 1, # Create an ID column to the left of the dataset
-         date_published = as.Date(made_public, "%m/%d/%Y")) %>% # Create a date_published column with a date data type
-  select(ID, date_published, modalities, species) # Remove the made_public column
+         date = as.Date(made_public, "%m/%d/%Y"), # Create a date column
+         date_published = format(date, "%Y")) %>% # Remove the day and month
+  select(ID, date_published, modalities, species) # Remove the made_public and date column
 ```
 
 Next the 'species' column was filtered to only include human studies as the research question involves investigating the neuroimaging techniques in humans.
@@ -161,7 +162,7 @@ modality_data <- human_data %>%
                                    "t1w") ~ "sMRI",
                                  .default = modalities))
 
-### Sanity check: Ensure the total number of observations is 846 in the human_data 
+### Sanity check: Ensure the total number of observations is 846
 ### and that the only categories are "multimodal", "eeg", "meg", "dMRI", "fMRI", and "sMRI"
 modality_count <- modality_data %>% 
   group_by(modalities) %>% 
@@ -170,19 +171,121 @@ modality_count <- modality_data %>%
 sum(modality_count$n)
 ```
 
-After completion of this step, the data was ready for visualisation. Below is a preview of the processed data.
+## 4.3 Reshaping the data
+
+Using the clean 'modality_data', the final dataset that is used in the visualisation was created by grouping the data by modality and calculating the count of each modality per year.
 
 ```{r}
-### If the above sanity check is passed then save the data as below
-neuroimaging_overtime <- modality_data
+## Reshaping the data -------------------------------------
+### Calculate the count for each modality per year
+neuroimaging_overtime <- modality_data %>% 
+  group_by(modalities) %>% 
+  count(date_published)
 
-### Preview the final dataset
+### Sanity check: Ensure the total of column 'n' is 846
+sum(neuroimaging_overtime$n)
+
+### View the first 10 rows of the data
 head(neuroimaging_overtime, 10)
+```
+
+Viewing the neuroimaging_overtime dataset showed that some of the imaging modalities did not have any data for certain years. This would make the whole dataset difficult to visualise, therefore it was decided to assign a value of 0 to the missing years for each modality.
+
+```{r}
+### Some modalities don't have data for every year
+### To ensure this is reflected in the plot, add rows for these cases where n = 0
+### First make a new dataframe with the missing data:
+
+### dMRI is missing 2018, 2019, 2020, 2021, 2022, and 2023
+dMRI_rows <- missing_data("dMRI", c("2018", "2019", "2020", "2021", "2022", "2023"), 0)
+
+### eeg is missing 2018
+eeg_rows <- missing_data("eeg", "2018", 0)
+
+### fMRI is missing 2018, 2019, and 2022
+fMRI_rows <- missing_data("fMRI", c("2018", "2019", "2022"), 0)
+
+### meg is missing 2018 and 2019
+meg_rows <- missing_data("meg", c("2018", "2019"), 0)
+
+### nirs is missing 2018, 2019, 2020, 2021, and 2022
+nirs_rows <- missing_data("nirs", c("2018", "2019", "2020", "2021", "2022"), 0)
+
+### sMRI is missing 2018
+sMRI_rows <- missing_data("sMRI", "2018", 0)
+
+### Join the missing data dataframes
+missing_modality_years <- rbind(dMRI_rows, eeg_rows, fMRI_rows, meg_rows, nirs_rows, sMRI_rows)
+
+### Join missing_modality_years and neuroimaging_overtime
+neuroimaging_final <- rbind(neuroimaging_overtime, missing_modality_years)
+
+### Order the dataframe by modality and date_published
+neuroimaging_final <- neuroimaging_final[with(neuroimaging_final, order(modalities, date_published)), ]
+```
+
+At this point the data was ready for visualisation. Below is a preview of the processed data.
+
+```{r}
+### Preview the final dataset
+head(neuroimaging_final, 10)
 ```
 
 # 5.0 Visualisation
 
 \[Graph or graphs. Documentation explaining any motivation (although good graph labelling is better than explanation in the accompanying text). Code for producing graph(s)\]
+
+## 5.1 Draft Plot
+
+An initial basic line graph was plotted to get an idea of what the data looked like as a visualisation.
+
+```{r}
+# Create basic plot to understand what the data looks like plotted
+draft_plot <- ggplot(neuroimaging_final, aes(x = date_published, y = n, group = modalities)) +
+  geom_line()
+
+print(draft_plot)
+```
+
+Layers were added to this plot to customise the colour of the lines to represent each modality, change the size of the font for the labels and change the colours of the grid lines. To do this a custom theme was created and a colour palette was used.
+
+```{r}
+## Adding layers -----------------------------------------
+### Add geom_point so that each plot point stands out
+### Label the axis and legend and provide a title
+### Set the colour palette and add a custom theme
+draft_plot <- ggplot(neuroimaging_final, mapping = aes(x = date_published, y = n)) +
+  geom_line(aes(group = modalities, text = paste("Modality:", modalities), colour = as.factor(modalities))) +
+  geom_point(aes(group = modalities, text = paste("Modality:", modalities), colour = as.factor(modalities))) +
+  labs(x = "Year",
+       y = "Frequency of modality use",
+       title = "Frequency of different neuroimaging techniques used over time",
+       colour = "Modality") +
+  scale_colour_brewer(palette = "Set2") +
+  theme_neuroimaging
+
+### View the draft plot
+print(draft_plot)
+```
+
+## 5.2 Final Interactive Visualisation
+
+To make the final visualisation more intuitive, the 'plotly' package was used to introduce an interactive element to the plot. To make sure the interactive labels were reflective of the data, a tooltip was added.
+
+```{r}
+## Make plot interactive -------------------------------
+interactive_draft <- ggplotly(draft_plot, tooltip = c("x", "y", "text"))
+
+## Save to environment as final visualisation ----------
+neuroimaging_visualisation <- interactive_draft
+```
+
+The final visualisation is rendered below:
+
+```{r}
+### View the final visualisation
+print(neuroimaging_visualisation)
+```
 
 # 6.0 Summary
 

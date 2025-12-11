@@ -7,10 +7,13 @@
 ## Check if packages are installed, if not, install them
 check_packages("tidyverse")
 check_packages("here")
+check_packages("plotly")
+check_packages("gganimate")
 
 ## Load packages
 library(tidyverse)
 library(here)
+library(plotly)
 
 # Settings --------------------------------------------------
 
@@ -25,3 +28,4 @@ source("R_scripts/001_functions.R")
 
 ## Load in all scripts for this project
 source("R_scripts/002_dataprep.R")
+source("R_scripts/003_visualisations.R")
