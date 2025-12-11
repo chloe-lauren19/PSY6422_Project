@@ -39,4 +39,4 @@ interactive_draft <- ggplotly(draft_plot, tooltip = c("x", "y", "text"))
 neuroimaging_visualisation <- interactive_draft
 
 ### View the final visualisation
-print(neuroimaging_visualisation)
+neuroimaging_visualisation

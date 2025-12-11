@@ -69,6 +69,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="index_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="index_files/libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+<script src="index_files/libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="index_files/libs/plotly-binding-4.11.0/plotly.js"></script>
+<script src="index_files/libs/typedarray-0.1/typedarray.min.js"></script>
+<script src="index_files/libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="index_files/libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="index_files/libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+<link href="index_files/libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="index_files/libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
 
 
 </head>
@@ -108,7 +117,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load packages</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plotly)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
@@ -285,7 +295,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>[Steps taken to clean the data, exclude outliers, sanity check the data range and values, create summary statistics, grouped variables, etc. Show the first few rows of the processed data, if possible. Showing the code which does this where relevant]</p>
 <section id="data-cleaning" class="level2">
 <h2 class="anchored" data-anchor-id="data-cleaning">4.1 Data Cleaning</h2>
-<p>Firstly the variables and empty columns were removed from the dataset so that only the variables needed for the visualisation remained. In addition to this, two new columns were created: ‘ID’ and ‘date_published’. The ‘ID’ column makes the dataset easier to read while the ‘date_published’ column converts the ‘made_public’ data from a character variable to a date variable. The ‘made_public’ column was then removed to avoid confusion with the new ‘date_published’ column.</p>
+<p>Firstly the variables and empty columns were removed from the dataset so that only the variables needed to create the final dataset for the visualisation remained. In addition to this, two new columns were created: ‘ID’ and ‘date_published’. The ‘ID’ column makes the data easier to read while the ‘date_published’ column converts the ‘made_public’ data from a character variable to a date variable. The ‘made_public’ column was then removed to avoid confusion with the new ‘date_published’ column.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Clean data -----------------------------------------------</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="do">### Make dataset with just the variables needed for the -</span></span>
@@ -294,8 +304,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(made_public, modalities, species) <span class="sc">%&gt;%</span> <span class="co"># Only retain these columns</span></span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>() <span class="sc">%&gt;%</span> <span class="co"># Remove all rows containing NAs</span></span>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ID =</span> <span class="fu">row_number</span>(), <span class="at">.before =</span> <span class="dv">1</span>, <span class="co"># Create an ID column to the left of the dataset</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">date_published =</span> <span class="fu">as.Date</span>(made_public, <span class="st">"%m/%d/%Y"</span>)) <span class="sc">%&gt;%</span> <span class="co"># Create a date_published column with a date data type</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(ID, date_published, modalities, species) <span class="co"># Remove the made_public column</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">date =</span> <span class="fu">as.Date</span>(made_public, <span class="st">"%m/%d/%Y"</span>), <span class="co"># Create a date column</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">date_published =</span> <span class="fu">format</span>(date, <span class="st">"%Y"</span>)) <span class="sc">%&gt;%</span> <span class="co"># Remove the day and month</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(ID, date_published, modalities, species) <span class="co"># Remove the made_public and date column</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next the ‘species’ column was filtered to only include human studies as the research question involves investigating the neuroimaging techniques in humans.</p>
 <div class="cell">
@@ -376,7 +387,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"t1w"</span>) <span class="sc">~</span> <span class="st">"sMRI"</span>,</span>
 <span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">.default =</span> modalities))</span>
 <span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a><span class="do">### Sanity check: Ensure the total number of observations is 846 in the human_data </span></span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a><span class="do">### Sanity check: Ensure the total number of observations is 846</span></span>
 <span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a><span class="do">### and that the only categories are "multimodal", "eeg", "meg", "dMRI", "fMRI", and "sMRI"</span></span>
 <span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>modality_count <span class="ot">&lt;-</span> modality_data <span class="sc">%&gt;%</span> </span>
 <span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(modalities) <span class="sc">%&gt;%</span> </span>
@@ -387,27 +398,103 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>[1] 846</code></pre>
 </div>
 </div>
-<p>After completion of this step, the data was ready for visualisation. Below is a preview of the processed data.</p>
+</section>
+<section id="reshaping-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="reshaping-the-data">4.3 Reshaping the data</h2>
+<p>Using the clean ‘modality_data’, the final dataset that is used in the visualisation was created by grouping the data by modality and calculating the count of each modality per year.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="do">### If the above sanity check is passed then save the data as below</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>neuroimaging_overtime <span class="ot">&lt;-</span> modality_data</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="do">### Preview the final dataset</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(neuroimaging_overtime, <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Reshaping the data -------------------------------------</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="do">### Calculate the count for each modality per year</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>neuroimaging_overtime <span class="ot">&lt;-</span> modality_data <span class="sc">%&gt;%</span> </span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(modalities) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(date_published)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="do">### Sanity check: Ensure the total of column 'n' is 846</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(neuroimaging_overtime<span class="sc">$</span>n)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 10 × 4
-      ID date_published modalities species
-   &lt;int&gt; &lt;date&gt;         &lt;chr&gt;      &lt;chr&gt;  
- 1     1 2020-08-07     multimodal Human  
- 2     2 2019-09-30     multimodal Human  
- 3     3 2021-01-05     multimodal Human  
- 4     4 2021-01-06     multimodal Human  
- 5     5 2018-03-30     multimodal Human  
- 6     6 2022-10-21     multimodal Human  
- 7     7 2019-11-29     multimodal Human  
- 8     8 2020-01-21     multimodal Human  
- 9     9 2020-01-19     multimodal Human  
-10    10 2022-05-24     multimodal Human  </code></pre>
+<pre><code>[1] 846</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="do">### View the first 10 rows of the data</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(neuroimaging_overtime, <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 3
+# Groups:   modalities [3]
+   modalities date_published     n
+   &lt;chr&gt;      &lt;chr&gt;          &lt;int&gt;
+ 1 dMRI       2024               2
+ 2 dMRI       2025               1
+ 3 eeg        2019               2
+ 4 eeg        2020              12
+ 5 eeg        2021              22
+ 6 eeg        2022              35
+ 7 eeg        2023              55
+ 8 eeg        2024              56
+ 9 eeg        2025              46
+10 fMRI       2020               1</code></pre>
+</div>
+</div>
+<p>Viewing the neuroimaging_overtime dataset showed that some of the imaging modalities did not have any data for certain years. This would make the whole dataset difficult to visualise, therefore it was decided to assign a value of 0 to the missing years for each modality. A custom function was created to do this.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create data frame for the missing data</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>missing_data <span class="ot">&lt;-</span> <span class="cf">function</span>(modality, date, count){</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">modalities =</span> modality,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">date_published =</span> date,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> count</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="do">### Some modalities don't have data for every year</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="do">### To ensure this is reflected in the plot, add rows for these cases where n = 0</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="do">### First make a new dataframe with the missing data:</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="do">### dMRI is missing 2018, 2019, 2020, 2021, 2022, and 2023</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>dMRI_rows <span class="ot">&lt;-</span> <span class="fu">missing_data</span>(<span class="st">"dMRI"</span>, <span class="fu">c</span>(<span class="st">"2018"</span>, <span class="st">"2019"</span>, <span class="st">"2020"</span>, <span class="st">"2021"</span>, <span class="st">"2022"</span>, <span class="st">"2023"</span>), <span class="dv">0</span>)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="do">### eeg is missing 2018</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>eeg_rows <span class="ot">&lt;-</span> <span class="fu">missing_data</span>(<span class="st">"eeg"</span>, <span class="st">"2018"</span>, <span class="dv">0</span>)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="do">### fMRI is missing 2018, 2019, and 2022</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>fMRI_rows <span class="ot">&lt;-</span> <span class="fu">missing_data</span>(<span class="st">"fMRI"</span>, <span class="fu">c</span>(<span class="st">"2018"</span>, <span class="st">"2019"</span>, <span class="st">"2022"</span>), <span class="dv">0</span>)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="do">### meg is missing 2018 and 2019</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>meg_rows <span class="ot">&lt;-</span> <span class="fu">missing_data</span>(<span class="st">"meg"</span>, <span class="fu">c</span>(<span class="st">"2018"</span>, <span class="st">"2019"</span>), <span class="dv">0</span>)</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="do">### nirs is missing 2018, 2019, 2020, 2021, and 2022</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>nirs_rows <span class="ot">&lt;-</span> <span class="fu">missing_data</span>(<span class="st">"nirs"</span>, <span class="fu">c</span>(<span class="st">"2018"</span>, <span class="st">"2019"</span>, <span class="st">"2020"</span>, <span class="st">"2021"</span>, <span class="st">"2022"</span>), <span class="dv">0</span>)</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a><span class="do">### sMRI is missing 2018</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>sMRI_rows <span class="ot">&lt;-</span> <span class="fu">missing_data</span>(<span class="st">"sMRI"</span>, <span class="st">"2018"</span>, <span class="dv">0</span>)</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a><span class="do">### Join the missing data dataframes</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>missing_modality_years <span class="ot">&lt;-</span> <span class="fu">rbind</span>(dMRI_rows, eeg_rows, fMRI_rows, meg_rows, nirs_rows, sMRI_rows)</span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a><span class="do">### Join missing_modality_years and neuroimaging_overtime</span></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>neuroimaging_final <span class="ot">&lt;-</span> <span class="fu">rbind</span>(neuroimaging_overtime, missing_modality_years)</span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a><span class="do">### Order the dataframe by modality and date_published</span></span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>neuroimaging_final <span class="ot">&lt;-</span> neuroimaging_final[<span class="fu">with</span>(neuroimaging_final, <span class="fu">order</span>(modalities, date_published)), ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>At this point the data was ready for visualisation. Below is a preview of the processed data.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="do">### Preview the final dataset</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(neuroimaging_final, <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 3
+# Groups:   modalities [2]
+   modalities date_published     n
+   &lt;chr&gt;      &lt;chr&gt;          &lt;dbl&gt;
+ 1 dMRI       2018               0
+ 2 dMRI       2019               0
+ 3 dMRI       2020               0
+ 4 dMRI       2021               0
+ 5 dMRI       2022               0
+ 6 dMRI       2023               0
+ 7 dMRI       2024               2
+ 8 dMRI       2025               1
+ 9 eeg        2018               0
+10 eeg        2019               2</code></pre>
 </div>
 </div>
 </section>
@@ -415,6 +502,89 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="visualisation" class="level1">
 <h1>5.0 Visualisation</h1>
 <p>[Graph or graphs. Documentation explaining any motivation (although good graph labelling is better than explanation in the accompanying text). Code for producing graph(s)]</p>
+<section id="draft-plot" class="level2">
+<h2 class="anchored" data-anchor-id="draft-plot">5.1 Draft Plot</h2>
+<p>An initial basic line graph was plotted to get an idea of what the data looked like as a visualisation.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create basic plot to understand what the data looks like plotted</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>draft_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(neuroimaging_final, <span class="fu">aes</span>(<span class="at">x =</span> date_published, <span class="at">y =</span> n, <span class="at">group =</span> modalities)) <span class="sc">+</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>()</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(draft_plot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Layers were added to this plot to customise the colour of the lines to represent each modality, change the size of the font for the labels and change the colours of the grid lines. To do this a custom theme was created and a colour palette was used.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Make a custom theme</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>theme_neuroimaging <span class="ot">=</span> <span class="fu">theme</span>(</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>),</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>),</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">legend.position =</span> <span class="st">"right"</span>,</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">legend.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>),</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="st">"gray100"</span>),</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">panel.grid.major =</span> <span class="fu">element_line</span>(<span class="at">colour =</span> <span class="st">"gray87"</span>),</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">colour =</span> <span class="st">"gray10"</span>)</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Adding layers -----------------------------------------</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="do">### Add geom_point so that each plot point stands out</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="do">### Label the axis and legend and provide a title</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="do">### Set the colour palette and add a custom theme</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>draft_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(neuroimaging_final, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> date_published, <span class="at">y =</span> n)) <span class="sc">+</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">group =</span> modalities, <span class="at">text =</span> <span class="fu">paste</span>(<span class="st">"Modality:"</span>, modalities), <span class="at">colour =</span> <span class="fu">as.factor</span>(modalities))) <span class="sc">+</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">group =</span> modalities, <span class="at">text =</span> <span class="fu">paste</span>(<span class="st">"Modality:"</span>, modalities), <span class="at">colour =</span> <span class="fu">as.factor</span>(modalities))) <span class="sc">+</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>,</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Frequency of modality use"</span>,</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Frequency of different neuroimaging techniques used over time"</span>,</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>       <span class="at">colour =</span> <span class="st">"Modality"</span>) <span class="sc">+</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>) <span class="sc">+</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>  theme_neuroimaging</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in geom_line(aes(group = modalities, text = paste("Modality:",
+modalities), : Ignoring unknown aesthetics: text</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in geom_point(aes(group = modalities, text = paste("Modality:", :
+Ignoring unknown aesthetics: text</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="do">### View the draft plot</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(draft_plot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="final-interactive-visualisation" class="level2">
+<h2 class="anchored" data-anchor-id="final-interactive-visualisation">5.2 Final Interactive Visualisation</h2>
+<p>To make the final visualisation more intuitive, the ‘plotly’ package was used to introduce an interactive element to the plot. To make sure the interactive labels were reflective of the data, a tooltip was added.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Make plot interactive -------------------------------</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>interactive_draft <span class="ot">&lt;-</span> <span class="fu">ggplotly</span>(draft_plot, <span class="at">tooltip =</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"text"</span>))</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Save to environment as final visualisation ----------</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>neuroimaging_visualisation <span class="ot">&lt;-</span> interactive_draft</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The final visualisation is rendered below:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="do">### View the final visualisation</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>neuroimaging_visualisation</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-5af3d731040885758a1b" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-5af3d731040885758a1b">{"x":{"data":[{"x":[1,2,3,4,5,6,7,8],"y":[0,0,0,0,0,0,2,1],"text":["date_published: 2018<br />n:   0<br />Modality: dMRI","date_published: 2019<br />n:   0<br />Modality: dMRI","date_published: 2020<br />n:   0<br />Modality: dMRI","date_published: 2021<br />n:   0<br />Modality: dMRI","date_published: 2022<br />n:   0<br />Modality: dMRI","date_published: 2023<br />n:   0<br />Modality: dMRI","date_published: 2024<br />n:   2<br />Modality: dMRI","date_published: 2025<br />n:   1<br />Modality: dMRI"],"type":"scatter","mode":"lines+markers","line":{"width":1.8897637795275593,"color":"rgba(102,194,165,1)","dash":"solid"},"hoveron":"points","name":"dMRI","legendgroup":"dMRI","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(102,194,165,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(102,194,165,1)"}},"frame":null},{"x":[1,2,3,4,5,6,7,8],"y":[0,2,12,22,35,55,56,46],"text":["date_published: 2018<br />n:   0<br />Modality: eeg","date_published: 2019<br />n:   2<br />Modality: eeg","date_published: 2020<br />n:  12<br />Modality: eeg","date_published: 2021<br />n:  22<br />Modality: eeg","date_published: 2022<br />n:  35<br />Modality: eeg","date_published: 2023<br />n:  55<br />Modality: eeg","date_published: 2024<br />n:  56<br />Modality: eeg","date_published: 2025<br />n:  46<br />Modality: eeg"],"type":"scatter","mode":"lines+markers","line":{"width":1.8897637795275593,"color":"rgba(252,141,98,1)","dash":"solid"},"hoveron":"points","name":"eeg","legendgroup":"eeg","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(252,141,98,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(252,141,98,1)"}},"frame":null},{"x":[1,2,3,4,5,6,7,8],"y":[0,0,1,1,0,2,2,2],"text":["date_published: 2018<br />n:   0<br />Modality: fMRI","date_published: 2019<br />n:   0<br />Modality: fMRI","date_published: 2020<br />n:   1<br />Modality: fMRI","date_published: 2021<br />n:   1<br />Modality: fMRI","date_published: 2022<br />n:   0<br />Modality: fMRI","date_published: 2023<br />n:   2<br />Modality: fMRI","date_published: 2024<br />n:   2<br />Modality: fMRI","date_published: 2025<br />n:   2<br />Modality: fMRI"],"type":"scatter","mode":"lines+markers","line":{"width":1.8897637795275593,"color":"rgba(141,160,203,1)","dash":"solid"},"hoveron":"points","name":"fMRI","legendgroup":"fMRI","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(141,160,203,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(141,160,203,1)"}},"frame":null},{"x":[1,2,3,4,5,6,7,8],"y":[0,0,2,3,5,3,3,2],"text":["date_published: 2018<br />n:   0<br />Modality: meg","date_published: 2019<br />n:   0<br />Modality: meg","date_published: 2020<br />n:   2<br />Modality: meg","date_published: 2021<br />n:   3<br />Modality: meg","date_published: 2022<br />n:   5<br />Modality: meg","date_published: 2023<br />n:   3<br />Modality: meg","date_published: 2024<br />n:   3<br />Modality: meg","date_published: 2025<br />n:   2<br />Modality: meg"],"type":"scatter","mode":"lines+markers","line":{"width":1.8897637795275593,"color":"rgba(231,138,195,1)","dash":"solid"},"hoveron":"points","name":"meg","legendgroup":"meg","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(231,138,195,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(231,138,195,1)"}},"frame":null},{"x":[1,2,3,4,5,6,7,8],"y":[3,21,119,48,56,86,110,77],"text":["date_published: 2018<br />n:   3<br />Modality: multimodal","date_published: 2019<br />n:  21<br />Modality: multimodal","date_published: 2020<br />n: 119<br />Modality: multimodal","date_published: 2021<br />n:  48<br />Modality: multimodal","date_published: 2022<br />n:  56<br />Modality: multimodal","date_published: 2023<br />n:  86<br />Modality: multimodal","date_published: 2024<br />n: 110<br />Modality: multimodal","date_published: 2025<br />n:  77<br />Modality: multimodal"],"type":"scatter","mode":"lines+markers","line":{"width":1.8897637795275593,"color":"rgba(166,216,84,1)","dash":"solid"},"hoveron":"points","name":"multimodal","legendgroup":"multimodal","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(166,216,84,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(166,216,84,1)"}},"frame":null},{"x":[1,2,3,4,5,6,7,8],"y":[0,0,0,0,0,1,2,8],"text":["date_published: 2018<br />n:   0<br />Modality: nirs","date_published: 2019<br />n:   0<br />Modality: nirs","date_published: 2020<br />n:   0<br />Modality: nirs","date_published: 2021<br />n:   0<br />Modality: nirs","date_published: 2022<br />n:   0<br />Modality: nirs","date_published: 2023<br />n:   1<br />Modality: nirs","date_published: 2024<br />n:   2<br />Modality: nirs","date_published: 2025<br />n:   8<br />Modality: nirs"],"type":"scatter","mode":"lines+markers","line":{"width":1.8897637795275593,"color":"rgba(255,217,47,1)","dash":"solid"},"hoveron":"points","name":"nirs","legendgroup":"nirs","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(255,217,47,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(255,217,47,1)"}},"frame":null},{"x":[1,2,3,4,5,6,7,8],"y":[0,5,4,10,6,11,13,9],"text":["date_published: 2018<br />n:   0<br />Modality: sMRI","date_published: 2019<br />n:   5<br />Modality: sMRI","date_published: 2020<br />n:   4<br />Modality: sMRI","date_published: 2021<br />n:  10<br />Modality: sMRI","date_published: 2022<br />n:   6<br />Modality: sMRI","date_published: 2023<br />n:  11<br />Modality: sMRI","date_published: 2024<br />n:  13<br />Modality: sMRI","date_published: 2025<br />n:   9<br />Modality: sMRI"],"type":"scatter","mode":"lines+markers","line":{"width":1.8897637795275593,"color":"rgba(229,196,148,1)","dash":"solid"},"hoveron":"points","name":"sMRI","legendgroup":"sMRI","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(229,196,148,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(229,196,148,1)"}},"frame":null}],"layout":{"margin":{"t":39.246160232461605,"r":7.3059360730593621,"b":35.931921959319226,"l":41.776670817766721},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724},"title":{"text":"Frequency of different neuroimaging techniques used over time","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402241},"x":0.5,"xref":"paper"},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.40000000000000002,8.5999999999999996],"tickmode":"array","ticktext":["2018","2019","2020","2021","2022","2023","2024","2025"],"tickvals":[1,2,3,4,5,6,7,8],"categoryorder":"array","categoryarray":["2018","2019","2020","2021","2022","2023","2024","2025"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":true,"linecolor":"rgba(26,26,26,1)","linewidth":0,"showgrid":true,"gridcolor":"rgba(222,222,222,1)","gridwidth":0,"zeroline":false,"anchor":"y","title":{"text":"Year","font":{"color":"rgba(0,0,0,1)","family":"","size":13.283520132835205}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-5.9500000000000002,124.95],"tickmode":"array","ticktext":["0","25","50","75","100"],"tickvals":[0,25,50,75,100],"categoryorder":"array","categoryarray":["0","25","50","75","100"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":true,"linecolor":"rgba(26,26,26,1)","linewidth":0,"showgrid":true,"gridcolor":"rgba(222,222,222,1)","gridwidth":0,"zeroline":false,"anchor":"x","title":{"text":"Frequency of modality use","font":{"color":"rgba(0,0,0,1)","family":"","size":13.283520132835205}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","layer":"below","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":true,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.68949771689498},"title":{"text":"Modality","font":{"color":"rgba(0,0,0,1)","family":"","size":13.283520132835205}}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"1806b77492b87":{"x":{},"y":{},"text":{},"colour":{},"type":"scatter"},"1806b64c8e93f":{"x":{},"y":{},"text":{},"colour":{}}},"cur_data":"1806b77492b87","visdat":{"1806b77492b87":["function (y) ","x"],"1806b64c8e93f":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
 </section>
 <section id="summary" class="level1">
 <h1>6.0 Summary</h1>

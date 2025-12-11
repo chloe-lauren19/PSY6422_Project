@@ -23,9 +23,10 @@ missing_data <- function(modality, date, count){
 ## Themes -------------------------------------------------
 # Make a custom theme
 theme_neuroimaging = theme(
-  plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
-  axis.title = element_text(size = 12),
+  plot.title = element_text(size = 12, hjust = 0.5),
+  axis.title = element_text(size = 10),
   legend.position = "right",
+  legend.title = element_text(size = 10),
   panel.background = element_rect("gray100"),
   panel.grid.major = element_line(colour = "gray87"),
   axis.line = element_line(colour = "gray10")

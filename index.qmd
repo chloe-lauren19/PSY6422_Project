@@ -18,6 +18,7 @@ editor: visual
 # Load packages
 library(tidyverse)
 library(here)
+library(plotly)
 ```
 
 # 2.0 Data Origins
@@ -189,7 +190,18 @@ sum(neuroimaging_overtime$n)
 head(neuroimaging_overtime, 10)
 ```
 
-Viewing the neuroimaging_overtime dataset showed that some of the imaging modalities did not have any data for certain years. This would make the whole dataset difficult to visualise, therefore it was decided to assign a value of 0 to the missing years for each modality.
+Viewing the neuroimaging_overtime dataset showed that some of the imaging modalities did not have any data for certain years. This would make the whole dataset difficult to visualise, therefore it was decided to assign a value of 0 to the missing years for each modality. A custom function was created to do this.
+
+```{r}
+# Create data frame for the missing data
+missing_data <- function(modality, date, count){
+  data.frame(
+    modalities = modality,
+    date_published = date,
+    n = count
+  )
+}
+```
 
 ```{r}
 ### Some modalities don't have data for every year
@@ -250,6 +262,19 @@ print(draft_plot)
 Layers were added to this plot to customise the colour of the lines to represent each modality, change the size of the font for the labels and change the colours of the grid lines. To do this a custom theme was created and a colour palette was used.
 
 ```{r}
+# Make a custom theme
+theme_neuroimaging = theme(
+  plot.title = element_text(size = 12, hjust = 0.5),
+  axis.title = element_text(size = 10),
+  legend.position = "right",
+  legend.title = element_text(size = 10),
+  panel.background = element_rect("gray100"),
+  panel.grid.major = element_line(colour = "gray87"),
+  axis.line = element_line(colour = "gray10")
+)
+```
+
+```{r}
 ## Adding layers -----------------------------------------
 ### Add geom_point so that each plot point stands out
 ### Label the axis and legend and provide a title
@@ -284,7 +309,7 @@ The final visualisation is rendered below:
 
 ```{r}
 ### View the final visualisation
-print(neuroimaging_visualisation)
+neuroimaging_visualisation
 ```
 
 # 6.0 Summary
